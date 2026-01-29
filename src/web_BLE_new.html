@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Controller Web App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>WEB APP CONTROLL CAR</h1>
+    <div class="status" id="status">Disconnected</div>
+    <button class="connect-btn" id="connectBtn" onclick="connect()">Connect BLE</button>
+    
+    <!-- Movement Controls - Dual Joystick -->
+    <div class="section">
+      <div class="section-title">Movement Control</div>
+      <div class="movement-container">
+        <!-- Left Joystick: Forward/Backward -->
+        <div class="joystick-section">
+          <div class="joystick-label">Forward/Back</div>
+          <div class="joystick" id="leftJoystick">
+            <button class="joystick-btn" id="fwdBtn" disabled>⬆️</button>
+            <div class="joystick-center">━</div>
+            <button class="joystick-btn" id="bckBtn" disabled>⬇️</button>
+          </div>
+        </div>
+        
+        <!-- Right Joystick: Left/Right -->
+        <div class="joystick-section">
+          <div class="joystick-label">Left/Right</div>
+          <div class="joystick" id="rightJoystick">
+            <div style="height: 8px;"></div>
+            <div class="joystick-row">
+              <button class="joystick-btn" id="leftBtn" disabled>⬅️</button>
+              <div class="joystick-center">⊙</div>
+              <button class="joystick-btn" id="rightBtn" disabled>➡️</button>
+            </div>
+            <div style="height: 8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Speed Controls -->
+    <div class="section control-bottom">
+      <div class="section">
+        <div class="section-title">Speed Control</div>
+        <div class="speed-control">
+          <div class="speed-label">
+            <span>Front Motor Speed:</span>
+            <span id="frontSpeedValue">200</span>
+          </div>
+          <input type="range" id="frontSpeed" min="180" max="255" value="200" disabled oninput="setFrontSpeed(this.value)">
+        </div>
+        <div class="speed-control">
+          <div class="speed-label">
+            <span>Back Motor Speed:</span>
+            <span id="backSpeedValue">200</span>
+          </div>
+          <input type="range" id="backSpeed" min="180" max="255" value="200" disabled oninput="setBackSpeed(this.value)">
+        </div>
+      </div>
+    
+      <!-- LED Controls -->
+      <div class="section">
+        <div class="section-title">LED Control</div>
+        <div class="led-row">
+          <div class="led-container">
+            <div class="led-label">Front</div>
+            <button class="led-btn led-front" id="ledFrontBtn" disabled></button>
+          </div>
+          <div class="led-container">
+            <div class="led-label">Back</div>
+            <button class="led-btn led-back" id="ledBackBtn" disabled></button>
+          </div>
+          <div class="led-container">
+            <div class="led-label">Blink</div>
+            <button class="led-btn led-blink" id="ledBlinkBtn" disabled></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

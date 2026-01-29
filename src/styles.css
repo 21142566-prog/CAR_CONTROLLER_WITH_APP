@@ -1,0 +1,484 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  max-width: 500px;
+  width: 100%;
+}
+
+h1 {
+  text-align: center;
+  color: #ff6b4a;
+  margin-bottom: 10px;
+  font-size: 28px;
+  font-weight: 900;
+  text-shadow: 
+    2px 2px 0px rgba(0,0,0,0.15),
+    4px 4px 0px rgba(0,0,0,0.1),
+    6px 6px 15px rgba(255,107,74,0.5),
+    -1px -1px 3px rgba(255,255,255,0.3);
+  letter-spacing: 1px;
+}
+
+.status {
+  text-align: center;
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 20px;
+}
+
+.connect-btn {
+  width: 100%;
+  padding: 12px;
+  background: #677ee4;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 25px;
+  transition: background 0.3s;
+}
+
+.connect-btn:hover {
+  background: #5568d3;
+}
+
+.connect-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.section {
+  margin-bottom: 25px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Movement Controls - Dual Joystick Layout */
+.movement-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+}
+
+.joystick-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.joystick-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.joystick {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), rgba(0,0,0,0.1));
+  border: 3px solid #667eea;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3), inset 0 -4px 8px rgba(0,0,0,0.1);
+}
+
+.joystick.active {
+  background: radial-gradient(circle at 30% 30%, rgba(102, 126, 234, 0.3), rgba(102, 126, 234, 0.1));
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5), inset 0 -4px 8px rgba(0,0,0,0.1);
+}
+
+.joystick-btn {
+  width: 35px;
+  height: 35px;
+  background: #f0f0f0;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #333;
+  font-size: 16px;
+  transition: all 0.15s;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.joystick-btn:hover:not(:disabled) {
+  background: #e0e0e0;
+  border-color: #667eea;
+}
+
+.joystick-btn:active:not(:disabled),
+.joystick-btn.active:not(:disabled) {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+  transform: scale(0.95);
+}
+
+.joystick-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.joystick-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.joystick-center {
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle at 30% 30%, #667eea, #5568d3);
+  border: none;
+  border-radius: 50%;
+  cursor: default;
+  color: white;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* Speed Sliders */
+.speed-control {
+  margin-bottom: 15px;
+}
+
+.speed-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.speed-label span:first-child {
+  font-weight: bold;
+  color: #333;
+}
+
+.speed-label span:last-child {
+  color: #667eea;
+  font-weight: bold;
+}
+
+input[type="range"] {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #ddd;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #667eea;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #5568d3;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #667eea;
+  cursor: pointer;
+  border: none;
+  transition: background 0.3s;
+}
+
+input[type="range"]:disabled {
+  opacity: 0.5;
+}
+
+/* LED Controls */
+.led-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+  align-items: center;
+  justify-items: center;
+}
+
+.led-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.led-label {
+  font-size: 11px;
+  font-weight: bold;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.led-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: 3px solid #444;
+  cursor: pointer;
+  font-size: 0;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 -2px 5px rgba(0,0,0,0.5), 0 2px 5px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.led-btn:hover:not(:disabled) {
+  border-color: #667eea;
+  transform: scale(1.05);
+}
+
+.led-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Front LED - Green */
+.led-btn.led-front {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+.led-btn.led-front.active {
+  background: radial-gradient(circle at 30% 30%, #00ff6b, #00cc00);
+  border-color: #00ff6b;
+  box-shadow: 
+    inset 0 -2px 5px rgba(0,0,0,0.3),
+    0 0 20px rgba(0,255,107,0.6),
+    0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Back LED - Red */
+.led-btn.led-back {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+.led-btn.led-back.active {
+  background: radial-gradient(circle at 30% 30%, #ff6b6b, #ff0000);
+  border-color: #ff6b6b;
+  box-shadow: 
+    inset 0 -2px 5px rgba(0,0,0,0.3),
+    0 0 20px rgba(255,107,107,0.6),
+    0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Blink LED - Color changing animation */
+.led-btn.led-blink {
+  background: #1a1a1a;
+  border-color: #444;
+}
+
+.led-btn.led-blink.active {
+  animation: ledBlink 0.6s infinite;
+  border-color: #ffd700;
+}
+
+@keyframes ledBlink {
+  0% {
+    background: radial-gradient(circle at 30% 30%, #ff6b4a, #ff4500);
+    box-shadow: 
+      inset 0 -2px 5px rgba(0,0,0,0.3),
+      0 0 15px rgba(255,107,74,0.6),
+      0 2px 5px rgba(0,0,0,0.3);
+  }
+  50% {
+    background: radial-gradient(circle at 30% 30%, #00ff6b, #00cc00);
+    box-shadow: 
+      inset 0 -2px 5px rgba(0,0,0,0.3),
+      0 0 15px rgba(0,255,107,0.6),
+      0 2px 5px rgba(0,0,0,0.3);
+  }
+  100% {
+    background: radial-gradient(circle at 30% 30%, #ff6b4a, #ff4500);
+    box-shadow: 
+      inset 0 -2px 5px rgba(0,0,0,0.3),
+      0 0 15px rgba(255,107,74,0.6),
+      0 2px 5px rgba(0,0,0,0.3);
+  }
+}
+
+/* Responsive Design - Landscape Mode */
+@media (orientation: landscape) {
+  body {
+    min-height: 100vh;
+  }
+  
+  .container {
+    max-width: 100%;
+    padding: 20px;
+    margin: 0 auto;
+  }
+  
+  h1 {
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+  
+  .status {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .connect-btn {
+    padding: 8px;
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  
+  .section {
+    margin-bottom: 15px;
+  }
+  
+  .section-title {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .movement-container {
+    margin-bottom: 15px;
+    gap: 15px;
+  }
+  
+  .joystick {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #667eea;
+  }
+  
+  .joystick-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
+  
+  .joystick-center {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+  
+  .joystick-row {
+    gap: 6px;
+  }
+  
+  .speed-control {
+    margin-bottom: 10px;
+  }
+  
+  .speed-label {
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+  
+  .led-row {
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  
+  .led-btn {
+    padding: 8px;
+    font-size: 10px;
+  }
+  
+  /* Horizontal layout cho 2 joystick */
+  .movement-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: row;
+  }
+  
+  /* Chia layout cho Speed và LED ngang */
+  .control-bottom {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+  }
+  
+  .control-bottom > .section {
+    flex: 1;
+    margin-bottom: 0;
+  }
+}
+
+/* Tablet - Landscape Mode */
+@media (orientation: landscape) and (min-width: 768px) {
+  .container {
+    max-width: 90%;
+  }
+  
+  .joystick {
+    width: 120px;
+    height: 120px;
+    border: 3px solid #667eea;
+  }
+  
+  .joystick-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 16px;
+  }
+  
+  .joystick-center {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+}
