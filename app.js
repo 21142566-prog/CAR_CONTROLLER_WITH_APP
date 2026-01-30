@@ -42,6 +42,45 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Reset all UI and states
+function resetAllStates() {
+  console.log('🔄 Resetting all UI states...');
+  
+  // Reset key states
+  keyPressed = {
+    forward: false,
+    backward: false,
+    left: false,
+    right: false
+  };
+  
+  lastCommand = null;
+  stopContinuousSend();
+  
+  // Reset LED states
+  ledState = {
+    front: false,
+    back: false,
+    blink: false
+  };
+  
+  // Update LED button visuals
+  document.getElementById('ledFrontBtn').classList.remove('active');
+  document.getElementById('ledBackBtn').classList.remove('active');
+  document.getElementById('ledBlinkBtn').classList.remove('active');
+  
+  // Reset speed sliders
+  document.getElementById('frontSpeed').value = 200;
+  document.getElementById('backSpeed').value = 200;
+  document.getElementById('frontSpeedValue').textContent = '200';
+  document.getElementById('backSpeedValue').textContent = '200';
+  
+  // Reset joystick visuals
+  updateJoystickVisuals();
+  
+  console.log('✅ All states reset');
+}
+
 // Send command continuously every 100ms while holding button
 function startContinuousSend() {
   if (sendInterval) clearInterval(sendInterval);
@@ -126,19 +165,37 @@ function setupControlButtons() {
   Object.entries(buttons).forEach(([btnId, key]) => {
     const btn = document.getElementById(btnId);
     
-    btn.addEventListener('mousedown', () => {
+    // Remove old listeners if any
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    
+    const finalBtn = document.getElementById(btnId);
+    
+    finalBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
       keyPressed[key] = true;
       updateCommand();
     });
-    btn.addEventListener('mouseup', () => {
+    finalBtn.addEventListener('mouseup', (e) => {
+      e.preventDefault();
       keyPressed[key] = false;
       updateCommand();
     });
-    btn.addEventListener('touchstart', () => {
+    finalBtn.addEventListener('mouseleave', (e) => {
+      keyPressed[key] = false;
+      updateCommand();
+    });
+    finalBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
       keyPressed[key] = true;
       updateCommand();
     });
-    btn.addEventListener('touchend', () => {
+    finalBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      keyPressed[key] = false;
+      updateCommand();
+    });
+    finalBtn.addEventListener('touchcancel', (e) => {
       keyPressed[key] = false;
       updateCommand();
     });
@@ -147,14 +204,23 @@ function setupControlButtons() {
 
 async function connect() {
   try {
+    // Disconnect if already connected
+    if (device && device.gatt.connected) {
+      console.log('⚠️ Already connected, disconnecting first...');
+      await device.gatt.disconnect();
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
     console.log('🔍 Scanning for BLE devices with service:', SERVICE_UUID);
     document.getElementById('status').textContent = '🔍 Scanning...';
     
     device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [SERVICE_UUID] }]
+      filters: [{ services: [SERVICE_UUID] }],
+      optionalServices: [SERVICE_UUID]
     });
     console.log('✅ Device found:', device.name);
     
+    // Add disconnect listener
     device.addEventListener('gattserverdisconnected', onDisconnect);
     
     console.log('📡 Connecting to GATT server...');
@@ -169,33 +235,35 @@ async function connect() {
     cmdChar = await service.getCharacteristic(CHAR_UUID);
     console.log('✅ Characteristic found');
     console.log('   Properties:', cmdChar.properties);
-    console.log('   - read:', !!cmdChar.properties.read);
-    console.log('   - write:', !!cmdChar.properties.write);
-    console.log('   - writeWithoutResponse:', !!cmdChar.properties.writeWithoutResponse);
-    console.log('   - notify:', !!cmdChar.properties.notify);
-    console.log('   - indicate:', !!cmdChar.properties.indicate);
+    
+    // Reset all states on new connection
+    resetAllStates();
+    
+    // Send initial stop command
+    await send('X');
     
     updateUIConnected(true);
-    document.getElementById('status').textContent = '✅ Connected';
+    document.getElementById('status').textContent = '✅ Connected to ' + device.name;
     setupControlButtons();
     setupLEDButtons();
     console.log('🎉 All connected and ready!');
   } catch (error) {
     console.error('❌ Connection error:', error.name, '-', error.message);
     document.getElementById('status').textContent = '❌ ' + error.message;
+    updateUIConnected(false);
   }
 }
 
 function onDisconnect() {
+  console.log('⚠️ Device disconnected');
   updateUIConnected(false);
-  document.getElementById('status').textContent = '❌ Disconnected';
-  keyPressed = { forward: false, backward: false, left: false, right: false };
-  lastCommand = null;
-  stopContinuousSend();
-  ledState = { front: false, back: false, blink: false };
-  document.getElementById('ledFrontBtn').classList.remove('active');
-  document.getElementById('ledBackBtn').classList.remove('active');
-  document.getElementById('ledBlinkBtn').classList.remove('active');
+  document.getElementById('status').textContent = '❌ Disconnected - Click Connect to reconnect';
+  resetAllStates();
+  
+  // Clean up
+  cmdChar = null;
+  service = null;
+  server = null;
 }
 
 function updateUIConnected(connected) {
@@ -207,28 +275,37 @@ function updateUIConnected(connected) {
 
 async function send(cmd, value = null) {
   if (!cmdChar) {
-    console.warn('No characteristic available to send');
+    console.warn('⚠️ No characteristic available to send');
     return;
   }
+  
+  if (!device || !device.gatt.connected) {
+    console.warn('⚠️ Device not connected');
+    return;
+  }
+  
   let data;
   if (value !== null) {
     data = new Uint8Array([cmd.charCodeAt(0), value]);
   } else {
     data = new Uint8Array([cmd.charCodeAt(0)]);
   }
+  
   try {
     if (cmdChar.properties.writeWithoutResponse) {
       await cmdChar.writeValueWithoutResponse(data);
-      console.log('✅ BLE write (no response) ->', cmd, data);
+      console.log('✅ BLE write (no response) ->', cmd, value !== null ? [cmd, value] : cmd);
     } else if (cmdChar.properties.write) {
       await cmdChar.writeValue(data);
-      console.log('✅ BLE write ->', cmd, data);
+      console.log('✅ BLE write ->', cmd, value !== null ? [cmd, value] : cmd);
     } else {
-      console.error('❌ Characteristic does not support write:', cmdChar.properties);
+      console.error('❌ Characteristic does not support write');
     }
   } catch (err) {
     console.error('❌ BLE write failed:', err.message);
-    document.getElementById('status').textContent = '❌ Write failed: ' + err.message;
+    if (err.message.includes('GATT Server is disconnected')) {
+      onDisconnect();
+    }
   }
 }
 
@@ -252,9 +329,11 @@ function toggleLED(ledType) {
     if (ledState.front) {
       btn.classList.add('active');
       send('U');
+      console.log('💡 LED Front ON');
     } else {
       btn.classList.remove('active');
       send('u');
+      console.log('💡 LED Front OFF');
     }
   } else if (ledType === 'back') {
     ledState.back = !ledState.back;
@@ -262,9 +341,11 @@ function toggleLED(ledType) {
     if (ledState.back) {
       btn.classList.add('active');
       send('V');
+      console.log('💡 LED Back ON');
     } else {
       btn.classList.remove('active');
       send('v');
+      console.log('💡 LED Back OFF');
     }
   } else if (ledType === 'blink') {
     ledState.blink = !ledState.blink;
@@ -272,14 +353,24 @@ function toggleLED(ledType) {
     if (ledState.blink) {
       btn.classList.add('active');
       send('W');
+      console.log('💡 LED Blink START');
     } else {
       btn.classList.remove('active');
       send('w');
+      console.log('💡 LED Blink STOP');
     }
   }
 }
 
 function setupLEDButtons() {
+  // Remove old listeners
+  ['ledFrontBtn', 'ledBackBtn', 'ledBlinkBtn'].forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+  });
+  
+  // Add new listeners
   document.getElementById('ledFrontBtn').addEventListener('click', () => toggleLED('front'));
   document.getElementById('ledBackBtn').addEventListener('click', () => toggleLED('back'));
   document.getElementById('ledBlinkBtn').addEventListener('click', () => toggleLED('blink'));
