@@ -8,9 +8,8 @@
 NimBLEServer* pServer = nullptr;
 NimBLECharacteristic* cmdChar = nullptr;
 bool deviceConnected = false;
-bool oldDeviceConnected = false;
 
-/* Forward declarations for functions used before their definitions */
+/* Forward declarations */
 void forward();
 void backward();
 void left();
@@ -54,11 +53,10 @@ bool ledBState = false;
 /* ============== SPEED ================== */
 int SPEED_MAX = 255;
 int SPEED_MIN = 180;
-int SPEED_MID = 200;
 int currentSpeedFront = 200;
 int currentSpeedBack = 200;
 
-/* ========== SERVER CALLBACK ============ */
+/* ========== SERVER CALLBACK (MỚI - XỬ LÝ RECONNECT) ============ */
 class ServerCallback : public NimBLEServerCallbacks {
   void onConnect(NimBLEServer* pServer) {
     deviceConnected = true;
@@ -68,15 +66,18 @@ class ServerCallback : public NimBLEServerCallbacks {
   void onDisconnect(NimBLEServer* pServer) {
     deviceConnected = false;
     Serial.println("❌ Client disconnected");
-    // Reset all states when disconnected
+    
+    // Reset tất cả states khi disconnect
     resetAllStates();
-    // Restart advertising
+    
+    // Restart advertising để có thể reconnect
+    Serial.println("🔄 Restarting advertising...");
     NimBLEDevice::startAdvertising();
-    Serial.println("🔄 Advertising restarted");
+    Serial.println("✅ Ready for reconnection");
   }
 };
 
-/* ============ COMMAND CALLBACK ============== */
+/* ============ BLE CALLBACK (GIỮ NGUYÊN CŨ) ============== */
 class CmdCallback : public NimBLECharacteristicCallbacks {
   void onWrite(NimBLECharacteristic* pCharacteristic) {
     std::string val = pCharacteristic->getValue();
@@ -101,55 +102,24 @@ class CmdCallback : public NimBLECharacteristicCallbacks {
       case 'J': Serial.println("  → Backward-Right"); B_R(); break;
       case 'X': Serial.println("  → Stop"); stopCar(); break;
 
-      case 'U': 
-        Serial.println("  → LED Front ON"); 
-        ledFState = true;  
-        blinkEnable = false; 
-        updateLed(); 
-        break;
-      case 'u': 
-        Serial.println("  → LED Front OFF"); 
-        ledFState = false; 
-        blinkEnable = false; 
-        updateLed(); 
-        break;
-      case 'V': 
-        Serial.println("  → LED Back ON"); 
-        ledBState = true;  
-        blinkEnable = false; 
-        updateLed(); 
-        break;
-      case 'v': 
-        Serial.println("  → LED Back OFF"); 
-        ledBState = false; 
-        blinkEnable = false; 
-        updateLed(); 
-        break;
+      case 'U': Serial.println("  → LED Front ON"); ledFState = true;  blinkEnable = false; updateLed(); break;
+      case 'u': Serial.println("  → LED Front OFF"); ledFState = false; blinkEnable = false; updateLed(); break;
+      case 'V': Serial.println("  → LED Back ON"); ledBState = true;  blinkEnable = false; updateLed(); break;
+      case 'v': Serial.println("  → LED Back OFF"); ledBState = false; blinkEnable = false; updateLed(); break;
 
-      case 'W': 
-        Serial.println("  → LED Blink START"); 
-        blinkEnable = true; 
-        break;
-      case 'w': 
-        Serial.println("  → LED Blink STOP"); 
-        blinkEnable = false; 
-        ledFState = false;
-        ledBState = false;
-        updateLed(); 
-        break;
+      case 'W': Serial.println("  → LED Blink START"); blinkEnable = true; break;
+      case 'w': Serial.println("  → LED Blink STOP"); blinkEnable = false; updateLed(); break;
 
       case 'S': 
         if (val.length() >= 2) {
           currentSpeedFront = constrain((int)val[1], SPEED_MIN, SPEED_MAX);
-          Serial.print("  → Front Speed: "); 
-          Serial.println(currentSpeedFront);
+          Serial.print("  → Front Speed: "); Serial.println(currentSpeedFront);
         }
         break;
       case 'T': 
         if (val.length() >= 2) {
           currentSpeedBack = constrain((int)val[1], SPEED_MIN, SPEED_MAX);
-          Serial.print("  → Back Speed: "); 
-          Serial.println(currentSpeedBack);
+          Serial.print("  → Back Speed: "); Serial.println(currentSpeedBack);
         }
         break;
       
@@ -164,9 +134,8 @@ class CmdCallback : public NimBLECharacteristicCallbacks {
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("\n\n=== ESP32 BLE Car Starting ===");
+  Serial.println("\n=== ESP32 BLE Car Starting ===");
 
-  // Pin setup
   pinMode(ENA, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
@@ -176,20 +145,19 @@ void setup() {
   pinMode(LED_F, OUTPUT);
   pinMode(LED_B, OUTPUT);
 
-  resetAllStates();
+  stopCar();
+  updateLed();
 
   /* ===== BLE INIT ===== */
   Serial.println("📡 Initializing BLE...");
   NimBLEDevice::init("ESP32_CAR");
   
-  // Create server
   pServer = NimBLEDevice::createServer();
-  pServer->setCallbacks(new ServerCallback());
+  pServer->setCallbacks(new ServerCallback());  // ⭐ THÊM MỚI - XỬ LÝ DISCONNECT
+  Serial.println("✅ Server created with callbacks");
   
-  // Create service
   NimBLEService *service = pServer->createService(SERVICE_UUID);
 
-  // Create characteristic
   cmdChar = service->createCharacteristic(
     CHAR_CMD_UUID,
     NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR | NIMBLE_PROPERTY::NOTIFY
@@ -199,56 +167,91 @@ void setup() {
   cmdChar->setCallbacks(new CmdCallback());
   Serial.println("✅ Callbacks set");
   
+  // Set initial value
+  cmdChar->setValue(std::string("X"));
+  Serial.println("✅ Initial value set");
+  
   service->start();
   Serial.println("✅ Service started");
 
-  // Start advertising
   NimBLEAdvertising *adv = NimBLEDevice::getAdvertising();
   adv->addServiceUUID(SERVICE_UUID);
   adv->start();
 
-  Serial.println("✅ BLE Ready! Device name: ESP32_CAR");
+  Serial.println("=================================");
+  Serial.println("🎉 BLE Ready! Device: ESP32_CAR");
   Serial.println("=================================\n");
 }
 
-/* ================= LOOP ================= */
+/* ================= LOOP (GIỮ NGUYÊN CƠ CHẾ POLLING CŨ) ================= */
 void loop() {
-  // Handle connection state changes
-  if (!deviceConnected && oldDeviceConnected) {
-    delay(500);
-    oldDeviceConnected = deviceConnected;
-  }
-  
-  if (deviceConnected && !oldDeviceConnected) {
-    oldDeviceConnected = deviceConnected;
+  // Poll characteristic for new commands (CƠ CHẾ CŨ - HOẠT ĐỘNG TỐT)
+  if (cmdChar != nullptr) {
+    std::string val = cmdChar->getValue();
+    if (val.length() > 0) {
+      char cmd = val[0];
+      Serial.print("📨 Polling received: ");
+      Serial.println(cmd);
+      lastCmdTime = millis();
+
+      switch (cmd) {
+        case 'F': Serial.println("  → Forward"); forward(); break;
+        case 'B': Serial.println("  → Backward"); backward(); break;
+        case 'L': Serial.println("  → Left"); left(); break;
+        case 'R': Serial.println("  → Right"); right(); break;
+        case 'G': Serial.println("  → Forward-Left"); F_L(); break;
+        case 'H': Serial.println("  → Forward-Right"); F_R(); break;
+        case 'I': Serial.println("  → Backward-Left"); B_L(); break;
+        case 'J': Serial.println("  → Backward-Right"); B_R(); break;
+        case 'X': Serial.println("  → Stop"); stopCar(); break;
+
+        case 'U': Serial.println("  → LED Front ON"); ledFState = true;  blinkEnable = false; updateLed(); break;
+        case 'u': Serial.println("  → LED Front OFF"); ledFState = false; blinkEnable = false; updateLed(); break;
+        case 'V': Serial.println("  → LED Back ON"); ledBState = true;  blinkEnable = false; updateLed(); break;
+        case 'v': Serial.println("  → LED Back OFF"); ledBState = false; blinkEnable = false; updateLed(); break;
+
+        case 'W': Serial.println("  → LED Blink START"); blinkEnable = true; break;
+        case 'w': Serial.println("  → LED Blink STOP"); blinkEnable = false; updateLed(); break;
+
+        case 'S': 
+          if (val.length() >= 2) {
+            currentSpeedFront = constrain((int)val[1], SPEED_MIN, SPEED_MAX);
+            Serial.print("  → Front Speed: "); Serial.println(currentSpeedFront);
+          }
+          break;
+        case 'T': 
+          if (val.length() >= 2) {
+            currentSpeedBack = constrain((int)val[1], SPEED_MIN, SPEED_MAX);
+            Serial.print("  → Back Speed: "); Serial.println(currentSpeedBack);
+          }
+          break;
+      }
+      
+      // Clear the value after processing
+      cmdChar->setValue(std::string(""));
+    }
   }
 
-  // Motor timeout check
-  if (deviceConnected && (millis() - lastCmdTime > CMD_TIMEOUT)) {
+  // Timeout check
+  if (millis() - lastCmdTime > CMD_TIMEOUT) {
     stopCar();
   }
   
-  // Handle LED blink
   handleBlink();
-  
-  delay(10);
 }
 
-/* ================= RESET STATES ================= */
+/* ================= RESET STATES (MỚI) ================= */
 void resetAllStates() {
   Serial.println("🔄 Resetting all states...");
   
-  // Stop motors
   stopCar();
   
-  // Reset LED states
   ledFState = false;
   ledBState = false;
   blinkEnable = false;
   blinkState = false;
   updateLed();
   
-  // Reset speeds
   currentSpeedFront = 200;
   currentSpeedBack = 200;
   
