@@ -2,82 +2,99 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Car Controller Web App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GUNNNZ CAR BLE</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>WEB APP CONTROLL CAR</h1>
-    <div class="status" id="status">Disconnected</div>
-    <button class="connect-btn" id="connectBtn" onclick="connect()">Connect BLE</button>
-    
-    <!-- Movement Controls - Dual Joystick -->
-    <div class="section">
-      <div class="section-title">Movement Control</div>
-      <div class="movement-container">
-        <!-- Left Joystick: Forward/Backward -->
-        <div class="joystick-section">
-          <div class="joystick-label">Forward/Back</div>
-          <div class="joystick" id="leftJoystick">
-            <button class="joystick-btn" id="fwdBtn" disabled>⬆️</button>
-            <div class="joystick-center">━</div>
-            <button class="joystick-btn" id="bckBtn" disabled>⬇️</button>
-          </div>
+  <!-- Background container -->
+  <div class="background-container"></div>
+
+  <!-- Main content -->
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <button class="ble-btn" id="connectBtn" onclick="connect()">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+          <path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z" fill="currentColor"/>
+        </svg>
+      </button>
+      <h1 class="title">GUNNNZ CAR BLE</h1>
+    </header>
+
+    <!-- Main Control Area -->
+    <div class="main-control">
+      <!-- Left Joystick -->
+      <div class="joystick-container">
+        <div class="joystick">
+          <button class="arrow-btn up" id="fwdBtn" disabled>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path d="M7 14l5-5 5 5z" fill="currentColor"/>
+            </svg>
+          </button>
+          <div class="center-dot"></div>
+          <button class="arrow-btn down" id="bckBtn" disabled>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path d="M7 10l5 5 5-5z" fill="currentColor"/>
+            </svg>
+          </button>
         </div>
-        
-        <!-- Right Joystick: Left/Right -->
-        <div class="joystick-section">
-          <div class="joystick-label">Left/Right</div>
-          <div class="joystick" id="rightJoystick">
-            <div style="height: 8px;"></div>
-            <div class="joystick-row">
-              <button class="joystick-btn" id="leftBtn" disabled>⬅️</button>
-              <div class="joystick-center">⊙</div>
-              <button class="joystick-btn" id="rightBtn" disabled>➡️</button>
-            </div>
-            <div style="height: 8px;"></div>
-          </div>
+      </div>
+
+      <!-- Status Display -->
+      <div class="status-container">
+        <div class="status-box">
+          <span class="status-label">STATUS:</span>
+          <span class="status-text" id="status">Disconnected</span>
+        </div>
+      </div>
+
+      <!-- Right Joystick -->
+      <div class="joystick-container">
+        <div class="joystick">
+          <button class="arrow-btn left" id="leftBtn" disabled>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path d="M14 7l-5 5 5 5z" fill="currentColor"/>
+            </svg>
+          </button>
+          <div class="center-dot"></div>
+          <button class="arrow-btn right" id="rightBtn" disabled>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path d="M10 7l5 5-5 5z" fill="currentColor"/>
+            </svg>
+          </button>
         </div>
       </div>
     </div>
-    
-    <!-- Speed Controls -->
-    <div class="section control-bottom">
-      <div class="section">
-        <div class="section-title">Speed Control</div>
-        <div class="speed-control">
-          <div class="speed-label">
-            <span>Front Motor Speed:</span>
-            <span id="frontSpeedValue">200</span>
-          </div>
-          <input type="range" id="frontSpeed" min="180" max="255" value="200" disabled oninput="setFrontSpeed(this.value)">
+
+    <!-- Bottom Controls -->
+    <div class="bottom-section">
+      <!-- Speed Control -->
+      <div class="speed-section">
+        <div class="speed-header">
+          <span class="speed-label">SPEED:</span>
+          <span class="speed-value" id="speedValue">200</span>
         </div>
-        <div class="speed-control">
-          <div class="speed-label">
-            <span>Back Motor Speed:</span>
-            <span id="backSpeedValue">200</span>
-          </div>
-          <input type="range" id="backSpeed" min="180" max="255" value="200" disabled oninput="setBackSpeed(this.value)">
+        <div class="speed-slider-container">
+          <input type="range" class="speed-slider" id="speedSlider" 
+                 min="180" max="255" value="200" disabled 
+                 oninput="setSpeed(this.value)">
         </div>
       </div>
-    
+
       <!-- LED Controls -->
-      <div class="section">
-        <div class="section-title">LED Control</div>
-        <div class="led-row">
-          <div class="led-container">
-            <div class="led-label">Front</div>
-            <button class="led-btn led-front" id="ledFrontBtn" disabled></button>
-          </div>
-          <div class="led-container">
-            <div class="led-label">Back</div>
-            <button class="led-btn led-back" id="ledBackBtn" disabled></button>
-          </div>
-          <div class="led-container">
-            <div class="led-label">Blink</div>
-            <button class="led-btn led-blink" id="ledBlinkBtn" disabled></button>
-          </div>
+      <div class="led-section">
+        <div class="led-title">LIGHTTING</div>
+        <div class="led-buttons">
+          <button class="led-circle" id="ledFrontBtn" disabled>
+            <span>F</span>
+          </button>
+          <button class="led-circle" id="ledBackBtn" disabled>
+            <span>B</span>
+          </button>
+          <button class="led-circle" id="ledBlinkBtn" disabled>
+            <span>A</span>
+          </button>
         </div>
       </div>
     </div>

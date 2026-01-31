@@ -2,483 +2,486 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Background - có thể thay bằng ảnh */
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  background-image: url('background.png');
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+
+.app-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   padding: 20px;
 }
 
-.container {
-  background: white;
-  border-radius: 20px;
-  padding: 30px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  max-width: 500px;
-  width: 100%;
+/* ========== HEADER ========== */
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 40px;
+  position: relative;
 }
 
-h1 {
-  text-align: center;
-  color: #ff6b4a;
-  margin-bottom: 10px;
-  font-size: 28px;
-  font-weight: 900;
-  text-shadow: 
-    2px 2px 0px rgba(0,0,0,0.15),
-    4px 4px 0px rgba(0,0,0,0.1),
-    6px 6px 15px rgba(255,107,74,0.5),
-    -1px -1px 3px rgba(255,255,255,0.3);
-  letter-spacing: 1px;
-}
-
-.status {
-  text-align: center;
-  font-size: 14px;
-  color: #999;
-  margin-bottom: 20px;
-}
-
-.connect-btn {
-  width: 100%;
-  padding: 12px;
-  background: #677ee4;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
+.ble-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4dd0e1, #00acc1);
+  border: 3px solid #00bcd4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-weight: bold;
-  margin-bottom: 25px;
-  transition: background 0.3s;
+  transition: all 0.3s;
+  color: white;
+  box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
 }
 
-.connect-btn:hover {
-  background: #5568d3;
+.ble-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(0, 188, 212, 0.8);
 }
 
-.connect-btn:disabled {
-  background: #ccc;
+.ble-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.section {
-  margin-bottom: 25px;
+.title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 32px;
+  font-weight: 900;
+  font-style: italic;
+  color: #ff3333;
+  text-shadow: 
+    0 0 10px rgba(255, 51, 51, 0.8),
+    0 0 20px rgba(255, 51, 51, 0.5),
+    2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 2px;
 }
 
-.section-title {
-  font-size: 14px;
-  font-weight: bold;
-  color: #666;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* Movement Controls - Dual Joystick Layout */
-.movement-container {
+/* ========== MAIN CONTROL AREA ========== */
+.main-control {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  gap: 20px;
-}
-
-.joystick-section {
+  gap: 30px;
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  max-height: 300px;
+  margin-bottom: 40px;
 }
 
-.joystick-label {
-  font-size: 12px;
-  font-weight: bold;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+/* ========== JOYSTICK ========== */
+.joystick-container {
+  flex: 0 0 auto;
 }
 
 .joystick {
-  width: 120px;
-  height: 120px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), rgba(0,0,0,0.1));
-  border: 3px solid #667eea;
+  background: linear-gradient(135deg, #80deea, #4dd0e1);
+  box-shadow: 
+    0 8px 30px rgba(77, 208, 225, 0.4),
+    inset 0 -5px 15px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
+  padding: 20px;
   position: relative;
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3), inset 0 -4px 8px rgba(0,0,0,0.1);
 }
 
 .joystick.active {
-  background: radial-gradient(circle at 30% 30%, rgba(102, 126, 234, 0.3), rgba(102, 126, 234, 0.1));
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5), inset 0 -4px 8px rgba(0,0,0,0.1);
+  box-shadow: 
+    0 8px 40px rgba(77, 208, 225, 0.7),
+    inset 0 -5px 15px rgba(0, 0, 0, 0.2);
 }
 
-.joystick-btn {
-  width: 35px;
-  height: 35px;
-  background: #f0f0f0;
-  border: 2px solid #ddd;
-  border-radius: 8px;
+.arrow-btn {
+  background: transparent;
+  border: none;
   cursor: pointer;
-  font-weight: bold;
-  color: #333;
-  font-size: 16px;
-  transition: all 0.15s;
-  user-select: none;
+  color: #2e7d32;
+  transition: all 0.2s;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.joystick-btn:hover:not(:disabled) {
-  background: #e0e0e0;
-  border-color: #667eea;
+.arrow-btn:hover:not(:disabled) {
+  transform: scale(1.2);
+  color: #1b5e20;
 }
 
-.joystick-btn:active:not(:disabled),
-.joystick-btn.active:not(:disabled) {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
-  transform: scale(0.95);
+.arrow-btn:active:not(:disabled),
+.arrow-btn.active:not(:disabled) {
+  transform: scale(0.9);
+  color: #0d4d0d;
 }
 
-.joystick-btn:disabled {
-  opacity: 0.4;
+.arrow-btn:disabled {
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
-.joystick-row {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
+.arrow-btn.up,
+.arrow-btn.down {
   width: 100%;
+  height: 40px;
 }
 
-.joystick-center {
-  width: 40px;
-  height: 40px;
-  background: radial-gradient(circle at 30% 30%, #667eea, #5568d3);
-  border: none;
+.arrow-btn.left,
+.arrow-btn.right {
+  width: 50px;
+  height: 50px;
+  position: absolute;
+}
+
+.arrow-btn.left {
+  left: 10px;
+}
+
+.arrow-btn.right {
+  right: 10px;
+}
+
+.center-dot {
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  cursor: default;
-  color: white;
-  font-size: 18px;
+  background: linear-gradient(135deg, #c6ff00, #aeea00);
+  box-shadow: 
+    0 0 15px rgba(198, 255, 0, 0.6),
+    inset 0 2px 5px rgba(255, 255, 255, 0.3);
+}
+
+/* ========== STATUS BOX ========== */
+.status-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.status-box {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px 60px;
+  border-radius: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  min-width: 300px;
+}
+
+.status-label {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ff3333;
+  font-style: italic;
+}
+
+.status-text {
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+}
+
+/* ========== BOTTOM SECTION ========== */
+.bottom-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 40px;
+  margin-top: auto;
+}
+
+/* ========== SPEED CONTROL ========== */
+.speed-section {
+  flex: 1;
+  max-width: 500px;
+}
+
+.speed-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-/* Speed Sliders */
-.speed-control {
+  gap: 15px;
   margin-bottom: 15px;
 }
 
 .speed-label {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 28px;
+  font-weight: 900;
+  font-style: italic;
+  color: #ff6f00;
+  text-shadow: 
+    0 0 10px rgba(255, 111, 0, 0.6),
+    2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.speed-label span:first-child {
-  font-weight: bold;
-  color: #333;
+.speed-value {
+  font-size: 28px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.6),
+    2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.speed-label span:last-child {
-  color: #667eea;
-  font-weight: bold;
+.speed-slider-container {
+  position: relative;
+  padding: 10px 0;
 }
 
-input[type="range"] {
+.speed-slider {
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: #ddd;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #00bcd4 0%, #4dd0e1 100%);
   outline: none;
   -webkit-appearance: none;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(77, 208, 225, 0.4);
 }
 
-input[type="range"]::-webkit-slider-thumb {
+.speed-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: #667eea;
+  background: #fff;
   cursor: pointer;
-  transition: background 0.3s;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border: 3px solid #00bcd4;
+  transition: all 0.2s;
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-  background: #5568d3;
+.speed-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 20px rgba(0, 188, 212, 0.8);
 }
 
-input[type="range"]::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+.speed-slider::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: #667eea;
+  background: #fff;
   cursor: pointer;
-  border: none;
-  transition: background 0.3s;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border: 3px solid #00bcd4;
+  transition: all 0.2s;
 }
 
-input[type="range"]:disabled {
-  opacity: 0.5;
-}
-
-/* LED Controls */
-.led-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-bottom: 20px;
-  align-items: center;
-  justify-items: center;
-}
-
-.led-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.led-label {
-  font-size: 11px;
-  font-weight: bold;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.led-btn {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #1a1a1a;
-  border: 3px solid #444;
-  cursor: pointer;
-  font-size: 0;
-  transition: all 0.3s ease;
-  box-shadow: inset 0 -2px 5px rgba(0,0,0,0.5), 0 2px 5px rgba(0,0,0,0.3);
-  position: relative;
-}
-
-.led-btn:hover:not(:disabled) {
-  border-color: #667eea;
-  transform: scale(1.05);
-}
-
-.led-btn:disabled {
+.speed-slider:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* Front LED - Green */
-.led-btn.led-front {
-  background: #1a1a1a;
-  border-color: #444;
+/* ========== LED CONTROLS ========== */
+.led-section {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 20px;
 }
 
-.led-btn.led-front.active {
-  background: radial-gradient(circle at 30% 30%, #00ff6b, #00cc00);
-  border-color: #00ff6b;
+.led-title {
+  font-size: 28px;
+  font-weight: 900;
+  font-style: italic;
+  color: #ff6f00;
+  text-shadow: 
+    0 0 10px rgba(255, 111, 0, 0.6),
+    2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.led-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.led-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f4ff81, #c6ff00);
+  border: 4px solid #aeea00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
   box-shadow: 
-    inset 0 -2px 5px rgba(0,0,0,0.3),
-    0 0 20px rgba(0,255,107,0.6),
-    0 2px 5px rgba(0,0,0,0.3);
+    0 6px 20px rgba(198, 255, 0, 0.4),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
-/* Back LED - Red */
-.led-btn.led-back {
-  background: #1a1a1a;
-  border-color: #444;
+.led-circle span {
+  font-size: 32px;
+  font-weight: 900;
+  font-style: italic;
+  color: #ff3333;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.led-btn.led-back.active {
-  background: radial-gradient(circle at 30% 30%, #ff6b6b, #ff0000);
-  border-color: #ff6b6b;
+.led-circle:hover:not(:disabled) {
+  transform: scale(1.1);
   box-shadow: 
-    inset 0 -2px 5px rgba(0,0,0,0.3),
-    0 0 20px rgba(255,107,107,0.6),
-    0 2px 5px rgba(0,0,0,0.3);
+    0 8px 25px rgba(198, 255, 0, 0.6),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Blink LED - Color changing animation */
-.led-btn.led-blink {
-  background: #1a1a1a;
-  border-color: #444;
+.led-circle:active:not(:disabled),
+.led-circle.active:not(:disabled) {
+  transform: scale(0.95);
+  box-shadow: 
+    0 0 30px rgba(198, 255, 0, 0.9),
+    inset 0 2px 8px rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, #c6ff00, #aeea00);
 }
 
-.led-btn.led-blink.active {
-  animation: ledBlink 0.6s infinite;
-  border-color: #ffd700;
+.led-circle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-@keyframes ledBlink {
-  0% {
-    background: radial-gradient(circle at 30% 30%, #ff6b4a, #ff4500);
+/* LED Active states với màu khác nhau */
+.led-circle.active {
+  animation: ledPulse 1s infinite;
+}
+
+@keyframes ledPulse {
+  0%, 100% {
     box-shadow: 
-      inset 0 -2px 5px rgba(0,0,0,0.3),
-      0 0 15px rgba(255,107,74,0.6),
-      0 2px 5px rgba(0,0,0,0.3);
+      0 0 30px rgba(198, 255, 0, 0.9),
+      inset 0 2px 8px rgba(255, 255, 255, 0.3);
   }
   50% {
-    background: radial-gradient(circle at 30% 30%, #00ff6b, #00cc00);
     box-shadow: 
-      inset 0 -2px 5px rgba(0,0,0,0.3),
-      0 0 15px rgba(0,255,107,0.6),
-      0 2px 5px rgba(0,0,0,0.3);
-  }
-  100% {
-    background: radial-gradient(circle at 30% 30%, #ff6b4a, #ff4500);
-    box-shadow: 
-      inset 0 -2px 5px rgba(0,0,0,0.3),
-      0 0 15px rgba(255,107,74,0.6),
-      0 2px 5px rgba(0,0,0,0.3);
+      0 0 40px rgba(198, 255, 0, 1),
+      inset 0 2px 8px rgba(255, 255, 255, 0.5);
   }
 }
 
-/* Responsive Design - Landscape Mode */
-@media (orientation: landscape) {
-  body {
-    min-height: 100vh;
-  }
-  
-  .container {
-    max-width: 100%;
-    padding: 20px;
-    margin: 0 auto;
-  }
-  
-  h1 {
-    font-size: 20px;
-    margin-bottom: 5px;
-  }
-  
-  .status {
-    font-size: 12px;
-    margin-bottom: 10px;
-  }
-  
-  .connect-btn {
-    padding: 8px;
-    font-size: 14px;
-    margin-bottom: 15px;
-  }
-  
-  .section {
-    margin-bottom: 15px;
-  }
-  
-  .section-title {
-    font-size: 12px;
-    margin-bottom: 10px;
-  }
-  
-  .movement-container {
-    margin-bottom: 15px;
-    gap: 15px;
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .main-control {
+    flex-direction: column;
+    max-height: none;
+    gap: 20px;
   }
   
   .joystick {
-    width: 100px;
-    height: 100px;
-    border: 2px solid #667eea;
+    width: 150px;
+    height: 150px;
   }
   
-  .joystick-btn {
-    width: 30px;
-    height: 30px;
-    font-size: 14px;
+  .status-box {
+    min-width: 250px;
+    padding: 20px 40px;
   }
   
-  .joystick-center {
-    width: 35px;
-    height: 35px;
-    font-size: 16px;
+  .bottom-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 30px;
   }
   
-  .joystick-row {
-    gap: 6px;
+  .speed-section {
+    max-width: none;
   }
   
-  .speed-control {
-    margin-bottom: 10px;
-  }
-  
-  .speed-label {
-    font-size: 12px;
-    margin-bottom: 5px;
-  }
-  
-  .led-row {
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-  
-  .led-btn {
-    padding: 8px;
-    font-size: 10px;
-  }
-  
-  /* Horizontal layout cho 2 joystick */
-  .movement-container {
-    display: flex;
-    justify-content: space-around;
+  .led-section {
     align-items: center;
-    flex-direction: row;
-  }
-  
-  /* Chia layout cho Speed và LED ngang */
-  .control-bottom {
-    display: flex;
-    gap: 20px;
-    justify-content: space-between;
-  }
-  
-  .control-bottom > .section {
-    flex: 1;
-    margin-bottom: 0;
   }
 }
 
-/* Tablet - Landscape Mode */
-@media (orientation: landscape) and (min-width: 768px) {
-  .container {
-    max-width: 90%;
+@media (max-width: 768px) {
+  .title {
+    font-size: 24px;
+    position: static;
+    transform: none;
+    text-align: center;
+    flex: 1;
+    margin-left: 10px;
+  }
+  
+  .joystick {
+    width: 130px;
+    height: 130px;
+  }
+  
+  .led-circle {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .led-circle span {
+    font-size: 28px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .app-container {
+    padding: 10px;
+  }
+  
+  .header {
+    margin-bottom: 20px;
+  }
+  
+  .main-control {
+    margin-bottom: 20px;
+    flex-direction: row;
   }
   
   .joystick {
     width: 120px;
     height: 120px;
-    border: 3px solid #667eea;
   }
   
-  .joystick-btn {
-    width: 35px;
-    height: 35px;
-    font-size: 16px;
+  .title {
+    font-size: 20px;
   }
   
-  .joystick-center {
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
+  .led-circle {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .led-circle span {
+    font-size: 24px;
   }
 }

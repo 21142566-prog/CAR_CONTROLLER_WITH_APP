@@ -13,10 +13,10 @@ let keyPressed = {
 
 let lastCommand = null;
 let sendInterval = null;
+let heartbeatInterval = null;
 
 const controlButtons = ['fwdBtn', 'bckBtn', 'leftBtn', 'rightBtn'];
 const ledButtons = ['ledFrontBtn', 'ledBackBtn', 'ledBlinkBtn'];
-const speedSliders = ['frontSpeed', 'backSpeed'];
 
 // Trạng thái LED
 let ledState = {
@@ -37,7 +37,7 @@ window.addEventListener('DOMContentLoaded', () => {
     console.error('❌ Web Bluetooth API not available!');
     console.error('⚠️  Make sure you are using Chrome, Edge, or Opera (not Firefox/Safari)');
     console.error('⚠️  Must use HTTPS or http://localhost:xxxx');
-    document.getElementById('status').textContent = '❌ Web Bluetooth not supported';
+    document.getElementById('status').textContent = 'Web Bluetooth not supported';
     document.getElementById('connectBtn').disabled = true;
   }
 });
@@ -56,6 +56,7 @@ function resetAllStates() {
   
   lastCommand = null;
   stopContinuousSend();
+  stopHeartbeat();
   
   // Reset LED states
   ledState = {
@@ -69,11 +70,9 @@ function resetAllStates() {
   document.getElementById('ledBackBtn').classList.remove('active');
   document.getElementById('ledBlinkBtn').classList.remove('active');
   
-  // Reset speed sliders
-  document.getElementById('frontSpeed').value = 200;
-  document.getElementById('backSpeed').value = 200;
-  document.getElementById('frontSpeedValue').textContent = '200';
-  document.getElementById('backSpeedValue').textContent = '200';
+  // Reset speed slider
+  document.getElementById('speedSlider').value = 200;
+  document.getElementById('speedValue').textContent = '200';
   
   // Reset joystick visuals
   updateJoystickVisuals();
@@ -96,6 +95,23 @@ function stopContinuousSend() {
   if (sendInterval) {
     clearInterval(sendInterval);
     sendInterval = null;
+  }
+}
+
+// Heartbeat to keep connection alive
+function startHeartbeat() {
+  if (heartbeatInterval) clearInterval(heartbeatInterval);
+  heartbeatInterval = setInterval(() => {
+    if (!sendInterval && cmdChar && device && device.gatt.connected) {
+      send('X');
+    }
+  }, 3000);
+}
+
+function stopHeartbeat() {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
   }
 }
 
@@ -137,19 +153,18 @@ function updateCommand() {
 
 // Cập nhật hiển thị joystick
 function updateJoystickVisuals() {
-  const leftJoystick = document.getElementById('leftJoystick');
-  const rightJoystick = document.getElementById('rightJoystick');
+  const joysticks = document.querySelectorAll('.joystick');
   
   if (keyPressed.forward || keyPressed.backward) {
-    leftJoystick.classList.add('active');
+    joysticks[0]?.classList.add('active');
   } else {
-    leftJoystick.classList.remove('active');
+    joysticks[0]?.classList.remove('active');
   }
   
   if (keyPressed.left || keyPressed.right) {
-    rightJoystick.classList.add('active');
+    joysticks[1]?.classList.add('active');
   } else {
-    rightJoystick.classList.remove('active');
+    joysticks[1]?.classList.remove('active');
   }
 }
 
@@ -174,29 +189,35 @@ function setupControlButtons() {
     finalBtn.addEventListener('mousedown', (e) => {
       e.preventDefault();
       keyPressed[key] = true;
+      finalBtn.classList.add('active');
       updateCommand();
     });
     finalBtn.addEventListener('mouseup', (e) => {
       e.preventDefault();
       keyPressed[key] = false;
+      finalBtn.classList.remove('active');
       updateCommand();
     });
     finalBtn.addEventListener('mouseleave', (e) => {
       keyPressed[key] = false;
+      finalBtn.classList.remove('active');
       updateCommand();
     });
     finalBtn.addEventListener('touchstart', (e) => {
       e.preventDefault();
       keyPressed[key] = true;
+      finalBtn.classList.add('active');
       updateCommand();
     });
     finalBtn.addEventListener('touchend', (e) => {
       e.preventDefault();
       keyPressed[key] = false;
+      finalBtn.classList.remove('active');
       updateCommand();
     });
     finalBtn.addEventListener('touchcancel', (e) => {
       keyPressed[key] = false;
+      finalBtn.classList.remove('active');
       updateCommand();
     });
   });
@@ -212,7 +233,7 @@ async function connect() {
     }
     
     console.log('🔍 Scanning for BLE devices with service:', SERVICE_UUID);
-    document.getElementById('status').textContent = '🔍 Scanning...';
+    document.getElementById('status').textContent = 'Scanning...';
     
     device = await navigator.bluetooth.requestDevice({
       filters: [{ services: [SERVICE_UUID] }],
@@ -234,7 +255,6 @@ async function connect() {
     console.log('🔍 Getting characteristic:', CHAR_UUID);
     cmdChar = await service.getCharacteristic(CHAR_UUID);
     console.log('✅ Characteristic found');
-    console.log('   Properties:', cmdChar.properties);
     
     // Reset all states on new connection
     resetAllStates();
@@ -243,13 +263,18 @@ async function connect() {
     await send('X');
     
     updateUIConnected(true);
-    document.getElementById('status').textContent = '✅ Connected to ' + device.name;
+    document.getElementById('status').textContent = 'Connected to ' + device.name;
     setupControlButtons();
     setupLEDButtons();
+    
+    // Start heartbeat
+    startHeartbeat();
+    console.log('💓 Heartbeat started');
+    
     console.log('🎉 All connected and ready!');
   } catch (error) {
     console.error('❌ Connection error:', error.name, '-', error.message);
-    document.getElementById('status').textContent = '❌ ' + error.message;
+    document.getElementById('status').textContent = error.message;
     updateUIConnected(false);
   }
 }
@@ -257,7 +282,7 @@ async function connect() {
 function onDisconnect() {
   console.log('⚠️ Device disconnected');
   updateUIConnected(false);
-  document.getElementById('status').textContent = '❌ Disconnected - Click Connect to reconnect';
+  document.getElementById('status').textContent = 'Disconnected - Click BLE button to reconnect';
   resetAllStates();
   
   // Clean up
@@ -270,7 +295,7 @@ function updateUIConnected(connected) {
   document.getElementById('connectBtn').disabled = connected;
   controlButtons.forEach(id => document.getElementById(id).disabled = !connected);
   ledButtons.forEach(id => document.getElementById(id).disabled = !connected);
-  speedSliders.forEach(id => document.getElementById(id).disabled = !connected);
+  document.getElementById('speedSlider').disabled = !connected;
 }
 
 async function send(cmd, value = null) {
@@ -292,15 +317,8 @@ async function send(cmd, value = null) {
   }
   
   try {
-    if (cmdChar.properties.writeWithoutResponse) {
-      await cmdChar.writeValueWithoutResponse(data);
-      console.log('✅ BLE write (no response) ->', cmd, value !== null ? [cmd, value] : cmd);
-    } else if (cmdChar.properties.write) {
-      await cmdChar.writeValue(data);
-      console.log('✅ BLE write ->', cmd, value !== null ? [cmd, value] : cmd);
-    } else {
-      console.error('❌ Characteristic does not support write');
-    }
+    await cmdChar.writeValue(data);
+    // console.log('✅ BLE write ->', cmd, value !== null ? `[${cmd}, ${value}]` : cmd);
   } catch (err) {
     console.error('❌ BLE write failed:', err.message);
     if (err.message.includes('GATT Server is disconnected')) {
@@ -309,13 +327,11 @@ async function send(cmd, value = null) {
   }
 }
 
-function setFrontSpeed(value) {
-  document.getElementById('frontSpeedValue').textContent = value;
+// Single speed control for both motors
+function setSpeed(value) {
+  document.getElementById('speedValue').textContent = value;
+  // Gửi speed cho cả 2 motors
   send('S', parseInt(value));
-}
-
-function setBackSpeed(value) {
-  document.getElementById('backSpeedValue').textContent = value;
   send('T', parseInt(value));
 }
 
