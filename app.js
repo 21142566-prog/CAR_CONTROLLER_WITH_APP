@@ -40,7 +40,28 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('status').textContent = 'Web Bluetooth not supported';
     document.getElementById('connectBtn').disabled = true;
   }
+
+  // đồng hồ thời gian thực
+  updateClock();
+  setInterval(updateClock, 1000);
 });
+
+// Update clock display
+function updateClock() {
+  const now = new Date();
+  
+  // Time
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+  
+  // Date
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  document.getElementById('date').textContent = `${day}/${month}/${year}`;
+}
 
 // Reset all UI and states
 function resetAllStates() {

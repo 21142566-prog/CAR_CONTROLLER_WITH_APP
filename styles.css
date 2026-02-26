@@ -101,6 +101,43 @@ body {
   letter-spacing: 2px;
 }
 
+/* Clock Container */
+.clock-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 2px solid rgba(0, 188, 212, 0.4);
+  flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(0, 188, 212, 0.3);
+}
+
+.clock-time {
+  font-size: 24px;
+  font-weight: 900;
+  color: #00bcd4;
+  font-family: 'Courier New', monospace;
+  text-shadow: 
+    0 0 10px rgba(0, 188, 212, 0.8),
+    0 0 20px rgba(0, 188, 212, 0.5);
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.clock-date {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4dd0e1;
+  font-family: 'Arial', sans-serif;
+  text-shadow: 
+    0 0 8px rgba(77, 208, 225, 0.6);
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
 /* ========== MAIN CONTROL AREA ========== */
 .main-control {
   display: flex;
@@ -474,6 +511,20 @@ body {
     width: 45px;
     height: 45px;
   }
+
+  .clock-container {
+    font-size: 18px;
+    padding: 8px 12px;
+    order: 3;
+  }
+  
+  .clock-time {
+    font-size: 18px;
+  }
+  
+  .clock-date {
+    font-size: 12px;
+  }
   
   .main-control {
     gap: 10px;
@@ -645,6 +696,18 @@ body {
   .ble-btn {
     width: 40px;
     height: 40px;
+  }
+
+  .clock-container {
+    padding: 6px 10px;
+  }
+  
+  .clock-time {
+    font-size: 16px;
+  }
+  
+  .clock-date {
+    font-size: 11px;
   }
   
   .main-control {
