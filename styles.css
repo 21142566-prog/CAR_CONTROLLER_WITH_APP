@@ -21,20 +21,36 @@ body {
   width: 100%;
   height: 100%;
   background: #000;
-  background-image: url('background.png');
+  background-image: url('background.png');  
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   z-index: 0;
+}
+
+
+/* Dark overlay nhẹ để text dễ đọc hơn */
+.background-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);  /* Overlay đen mờ 30% */
+  z-index: 1;
 }
 
 .app-container {
   position: relative;
   z-index: 10;
   width: 100%;
-  height: 100%;
+  min-height: 100%;  /* Đổi từ height thành min-height */
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 15px;  /* Giảm padding */
+  overflow-y: auto;  /* Cho phép scroll */
+  overflow-x: hidden;
 }
 
 /* ========== HEADER ========== */
@@ -91,9 +107,9 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 30px;
-  flex: 1;
-  max-height: 300px;
-  margin-bottom: 40px;
+  flex: 0 0 auto;  /* Không cho flex grow */
+  max-height: 250px;  /* Giảm chiều cao */
+  margin-bottom: 30px;  /* Giảm margin */
 }
 
 /* ========== JOYSTICK ========== */
@@ -398,39 +414,55 @@ body {
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1024px) {
   .main-control {
-    flex-direction: column;
-    max-height: none;
-    gap: 20px;
+    gap: 15px;
+    max-height: 200px;
+    margin-bottom: 20px;
   }
   
   .joystick {
-    width: 150px;
-    height: 150px;
+    width: 140px;
+    height: 140px;
   }
   
   .status-box {
-    min-width: 250px;
-    padding: 20px 40px;
+    min-width: 200px;
+    padding: 20px 30px;
+  }
+  
+  .status-label {
+    font-size: 18px;
+  }
+  
+  .status-text {
+    font-size: 14px;
   }
   
   .bottom-section {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 30px;
+    gap: 25px;
+    margin-top: 0;
   }
   
   .speed-section {
     max-width: none;
   }
-  
-  .led-section {
-    align-items: center;
-  }
 }
 
 @media (max-width: 768px) {
+  body {
+    overflow-y: auto;  /* Cho phép scroll trên body */
+  }
+  
+  .app-container {
+    padding: 10px;
+    min-height: auto;
+  }
+  
+  .header {
+    margin-bottom: 15px;
+  }
+  
   .title {
-    font-size: 24px;
+    font-size: 20px;
     position: static;
     transform: none;
     text-align: center;
@@ -438,33 +470,193 @@ body {
     margin-left: 10px;
   }
   
+  .ble-btn {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .main-control {
+    gap: 10px;
+    max-height: none;
+    margin-bottom: 15px;
+  }
+  
   .joystick {
-    width: 130px;
-    height: 130px;
+    width: 110px;
+    height: 110px;
+    padding: 15px;
+  }
+  
+  .arrow-btn svg {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .center-dot {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .status-box {
+    min-width: 150px;
+    padding: 15px 25px;
+  }
+  
+  .status-label {
+    font-size: 16px;
+  }
+  
+  .status-text {
+    font-size: 13px;
+  }
+  
+  .bottom-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 20px;
+  }
+  
+  .speed-label,
+  .speed-value {
+    font-size: 22px;
+  }
+  
+  .speed-header {
+    margin-bottom: 10px;
+  }
+  
+  .led-section {
+    align-items: center;
+  }
+  
+  .led-title {
+    font-size: 22px;
+    text-align: center;
+  }
+  
+  .led-buttons {
+    gap: 15px;
   }
   
   .led-circle {
-    width: 70px;
-    height: 70px;
+    width: 65px;
+    height: 65px;
   }
   
   .led-circle span {
-    font-size: 28px;
+    font-size: 26px;
   }
 }
 
 @media (orientation: landscape) and (max-height: 600px) {
   .app-container {
+    padding: 8px;
+  }
+  
+  .header {
+    margin-bottom: 10px;
+  }
+  
+  .main-control {
+    margin-bottom: 10px;
+    flex-direction: row;
+    max-height: 150px;
+  }
+  
+  .joystick {
+    width: 100px;
+    height: 100px;
+    padding: 12px;
+  }
+  
+  .arrow-btn svg {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .center-dot {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .title {
+    font-size: 18px;
+  }
+  
+  .ble-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .status-box {
+    padding: 10px 20px;
+    min-width: 130px;
+  }
+  
+  .status-label {
+    font-size: 14px;
+  }
+  
+  .status-text {
+    font-size: 12px;
+  }
+  
+  .bottom-section {
+    gap: 15px;
+  }
+  
+  .speed-label,
+  .speed-value {
+    font-size: 18px;
+  }
+  
+  .led-title {
+    font-size: 18px;
+  }
+  
+  .led-circle {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .led-circle span {
+    font-size: 22px;
+  }
+  
+  .led-buttons {
+    gap: 10px;
+  }
+}
+
+/* Portrait mobile - stack vertically */
+@media (max-width: 480px) {
+  .app-container {
     padding: 10px;
   }
   
   .header {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .title {
+    font-size: 18px;
+  }
+  
+  .ble-btn {
+    width: 40px;
+    height: 40px;
   }
   
   .main-control {
-    margin-bottom: 20px;
-    flex-direction: row;
+    flex-direction: column;
+    max-height: none;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .joystick-container {
+    display: flex;
+    justify-content: center;
   }
   
   .joystick {
@@ -472,7 +664,26 @@ body {
     height: 120px;
   }
   
-  .title {
+  .status-box {
+    min-width: auto;
+    width: 100%;
+    padding: 12px 20px;
+  }
+  
+  .status-label {
+    font-size: 15px;
+  }
+  
+  .status-text {
+    font-size: 13px;
+  }
+  
+  .speed-label,
+  .speed-value {
+    font-size: 20px;
+  }
+  
+  .led-title {
     font-size: 20px;
   }
   
