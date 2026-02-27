@@ -15,6 +15,10 @@ let lastCommand = null;
 let sendInterval = null;
 let heartbeatInterval = null;
 
+// Command queue to prevent GATT conflicts
+let commandQueue = [];
+let isProcessingQueue = false;
+
 const controlButtons = ['fwdBtn', 'bckBtn', 'leftBtn', 'rightBtn'];
 const ledButtons = ['ledFrontBtn', 'ledBackBtn', 'ledBlinkBtn'];
 
@@ -308,6 +312,10 @@ async function connect() {
 function onDisconnect() {
   console.log('⚠️ Device disconnected');
   
+  // Clear command queue
+  commandQueue = [];
+  isProcessingQueue = false;
+  
   // ⭐ End Firebase session tracking
   if (typeof endSession === 'function') {
     endSession();
@@ -341,6 +349,24 @@ async function send(cmd, value = null) {
     return;
   }
   
+  // Add to queue
+  commandQueue.push({ cmd, value });
+  
+  // Process queue if not already processing
+  if (!isProcessingQueue) {
+    processCommandQueue();
+  }
+}
+
+async function processCommandQueue() {
+  if (commandQueue.length === 0) {
+    isProcessingQueue = false;
+    return;
+  }
+  
+  isProcessingQueue = true;
+  const { cmd, value } = commandQueue.shift();
+  
   let data;
   if (value !== null) {
     data = new Uint8Array([cmd.charCodeAt(0), value]);
@@ -355,8 +381,17 @@ async function send(cmd, value = null) {
     console.error('❌ BLE write failed:', err.message);
     if (err.message.includes('GATT Server is disconnected')) {
       onDisconnect();
+      commandQueue = []; // Clear queue on disconnect
+      isProcessingQueue = false;
+      return;
     }
   }
+  
+  // Small delay between commands to prevent conflicts
+  await new Promise(resolve => setTimeout(resolve, 20));
+  
+  // Process next command
+  processCommandQueue();
 }
 
 // Single speed control for both motors
