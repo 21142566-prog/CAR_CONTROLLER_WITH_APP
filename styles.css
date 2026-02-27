@@ -59,6 +59,7 @@ body {
   align-items: center;
   margin-bottom: 40px;
   position: relative;
+  justify-content: space-between; /* spread BLE button and clock */
 }
 
 .ble-btn {
@@ -113,6 +114,7 @@ body {
   border: 2px solid rgba(0, 188, 212, 0.4);
   flex-shrink: 0;
   box-shadow: 0 0 15px rgba(0, 188, 212, 0.3);
+  margin-left: auto; 
 }
 
 .clock-time {
