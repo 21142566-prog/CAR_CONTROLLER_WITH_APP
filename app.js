@@ -40,8 +40,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('status').textContent = 'Web Bluetooth not supported';
     document.getElementById('connectBtn').disabled = true;
   }
-
-  // đồng hồ thời gian thực
+  
+  // Start clock
   updateClock();
   setInterval(updateClock, 1000);
 });
@@ -292,6 +292,11 @@ async function connect() {
     startHeartbeat();
     console.log('💓 Heartbeat started');
     
+    // ⭐ Start Firebase session tracking
+    if (typeof startSession === 'function') {
+      await startSession();
+    }
+    
     console.log('🎉 All connected and ready!');
   } catch (error) {
     console.error('❌ Connection error:', error.name, '-', error.message);
@@ -302,6 +307,12 @@ async function connect() {
 
 function onDisconnect() {
   console.log('⚠️ Device disconnected');
+  
+  // ⭐ End Firebase session tracking
+  if (typeof endSession === 'function') {
+    endSession();
+  }
+  
   updateUIConnected(false);
   document.getElementById('status').textContent = 'Disconnected - Click BLE button to reconnect';
   resetAllStates();
