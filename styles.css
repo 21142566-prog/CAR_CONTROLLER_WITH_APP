@@ -118,7 +118,9 @@ body {
 .clock-time {
   font-size: 24px;
   font-weight: 900;
-  color: #00bcd4;
+  /* force color on all platforms (iOS sometimes ignores color in dark mode) */
+  color: #00bcd4 !important;
+  -webkit-text-fill-color: #00bcd4; /* Safari/WebKit */
   font-family: 'Courier New', monospace;
   text-shadow: 
     0 0 10px rgba(0, 188, 212, 0.8),
