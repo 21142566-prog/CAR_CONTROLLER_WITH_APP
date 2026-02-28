@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistics - BLE Car Tracker</title>
+  <link rel="stylesheet" href="stats-styles.css">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1>📊 BLE Car Statistics</h1>
+      <a href="index.html" class="back-btn">← Back to Control</a>
+    </header>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="card">
+        <div class="card-icon">🚗</div>
+        <div class="card-content">
+          <div class="card-label">Total Sessions</div>
+          <div class="card-value" id="totalSessions">0</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">⏱️</div>
+        <div class="card-content">
+          <div class="card-label">Total Time</div>
+          <div class="card-value" id="totalTime">0h 0m</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">📅</div>
+        <div class="card-content">
+          <div class="card-label">Last Session</div>
+          <div class="card-value" id="lastSession">N/A</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-content">
+          <div class="card-label">Avg Duration</div>
+          <div class="card-value" id="avgDuration">0m 0s</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn btn-primary" onclick="loadSessions()">🔄 Refresh Data</button>
+      <button class="btn btn-success" onclick="exportToCSV()">📥 Export CSV</button>
+      <button class="btn btn-danger" onclick="deleteOldSessions()">🗑️ Delete Old (30+ days)</button>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-section">
+      <label>
+        <span>Filter by Date:</span>
+        <select id="dateFilter" onchange="filterSessions()">
+          <option value="all">All Time</option>
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+        </select>
+      </label>
+      <label>
+        <span>Show:</span>
+        <select id="limitFilter" onchange="filterSessions()">
+          <option value="10">10 records</option>
+          <option value="25">25 records</option>
+          <option value="50">50 records</option>
+          <option value="100">100 records</option>
+          <option value="all">All records</option>
+        </select>
+      </label>
+    </div>
+
+    <!-- Sessions Table -->
+    <div class="table-container">
+      <table class="sessions-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Device Name</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Duration</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="sessionsTableBody">
+          <tr>
+            <td colspan="6" class="loading">Loading data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-section">
+      <h2>📈 Usage Over Time</h2>
+      <canvas id="usageChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Firebase Config -->
+  <script src="firebase-config.js"></script>
+  <!-- Chart.js for graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Stats Script -->
+  <script src="stats.js"></script>
+</body>
+</html>

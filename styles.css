@@ -21,13 +21,26 @@ body {
   width: 100%;
   height: 100%;
   background: #000;
-  background-image: url('background.png');  
+  background-image: url('background.png');  /* ⭐ Đã bật sử dụng background.png */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   z-index: 0;
 }
 
+/* Gradient overlay - DISABLED để hiển thị background image */
+/*
+.background-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #001a33 0%, #000 50%, #001a33 100%);
+  z-index: 1;
+}
+*/
 
 /* Dark overlay nhẹ để text dễ đọc hơn */
 .background-container::after {
@@ -59,7 +72,7 @@ body {
   align-items: center;
   margin-bottom: 40px;
   position: relative;
-  justify-content: space-between; /* spread BLE button and clock */
+  justify-content: space-between;
 }
 
 .ble-btn {
@@ -75,6 +88,7 @@ body {
   transition: all 0.3s;
   color: white;
   box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
+  flex-shrink: 0;
 }
 
 .ble-btn:hover:not(:disabled) {
@@ -102,6 +116,35 @@ body {
   letter-spacing: 2px;
 }
 
+/* Header Right - Stats + Clock */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+
+.stats-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b4a, #ff4500);
+  border: 3px solid #ff6b4a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 24px;
+  text-decoration: none;
+  box-shadow: 0 0 20px rgba(255, 107, 74, 0.5);
+}
+
+.stats-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(255, 107, 74, 0.8);
+}
+
 /* Clock Container */
 .clock-container {
   display: flex;
@@ -114,15 +157,12 @@ body {
   border: 2px solid rgba(0, 188, 212, 0.4);
   flex-shrink: 0;
   box-shadow: 0 0 15px rgba(0, 188, 212, 0.3);
-  margin-left: auto; 
 }
 
 .clock-time {
   font-size: 24px;
   font-weight: 900;
-  /* force color on all platforms (iOS sometimes ignores color in dark mode) */
-  color: #00bcd4 !important;
-  -webkit-text-fill-color: #00bcd4; /* Safari/WebKit */
+  color: #00bcd4;
   font-family: 'Courier New', monospace;
   text-shadow: 
     0 0 10px rgba(0, 188, 212, 0.8),
@@ -500,22 +540,27 @@ body {
   
   .header {
     margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
   }
   
   .title {
-    font-size: 20px;
-    position: static;
+    font-size: 18px;
+    position: relative;
+    left: auto;
     transform: none;
     text-align: center;
-    flex: 1;
-    margin-left: 10px;
+    flex: 1 1 100%;
+    order: 2;
+    margin: 0;
   }
   
   .ble-btn {
     width: 45px;
     height: 45px;
+    order: 1;
   }
-
+  
   .clock-container {
     font-size: 18px;
     padding: 8px 12px;
@@ -694,14 +739,14 @@ body {
   }
   
   .title {
-    font-size: 18px;
+    font-size: 16px;
   }
   
   .ble-btn {
     width: 40px;
     height: 40px;
   }
-
+  
   .clock-container {
     padding: 6px 10px;
   }
