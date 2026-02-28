@@ -2,16 +2,16 @@
 // FIREBASE TRACKING FOR BLE CAR APP
 // ============================================
 
-// Current session tracking
-let currentSession = null;
-let sessionStartTime = null;
+// Current session tracking (accessible globally for cleanup)
+window.currentSession = null;
+window.sessionStartTime = null;
 
 // ============================================
 // 1. START SESSION - Gọi khi kết nối BLE
 // ============================================
 async function startSession() {
   try {
-    sessionStartTime = new Date();
+    window.sessionStartTime = new Date();
     
     // Tạo session mới trong Firestore
     const sessionRef = await db.collection('sessions').add({
@@ -22,10 +22,10 @@ async function startSession() {
       duration: 0
     });
     
-    currentSession = sessionRef.id;
-    console.log('📊 Session started:', currentSession);
+    window.currentSession = sessionRef.id;
+    console.log('📊 Session started:', window.currentSession);
     
-    return currentSession;
+    return window.currentSession;
   } catch (error) {
     console.error('❌ Error starting session:', error);
   }
@@ -35,26 +35,26 @@ async function startSession() {
 // 2. END SESSION - Gọi khi disconnect BLE
 // ============================================
 async function endSession() {
-  if (!currentSession) {
+  if (!window.currentSession) {
     console.warn('⚠️ No active session to end');
     return;
   }
   
   try {
     const endTime = new Date();
-    const duration = Math.floor((endTime - sessionStartTime) / 1000); // seconds
+    const duration = Math.floor((endTime - window.sessionStartTime) / 1000); // seconds
     
     // Update session với endTime và duration
-    await db.collection('sessions').doc(currentSession).update({
+    await db.collection('sessions').doc(window.currentSession).update({
       endTime: firebase.firestore.FieldValue.serverTimestamp(),
       duration: duration,
       status: 'disconnected'
     });
     
-    console.log(`📊 Session ended: ${currentSession} (${duration}s)`);
+    console.log(`📊 Session ended: ${window.currentSession} (${duration}s)`);
     
-    currentSession = null;
-    sessionStartTime = null;
+    window.currentSession = null;
+    window.sessionStartTime = null;
   } catch (error) {
     console.error('❌ Error ending session:', error);
   }
@@ -64,14 +64,14 @@ async function endSession() {
 // 3. LOG ACTION - Gọi khi điều khiển xe
 // ============================================
 async function logAction(action, value = null) {
-  if (!currentSession) {
+  if (!window.currentSession) {
     console.warn('⚠️ No active session for logging action');
     return;
   }
   
   try {
     await db.collection('actions').add({
-      sessionId: currentSession,
+      sessionId: window.currentSession,
       action: action,
       value: value,
       timestamp: firebase.firestore.FieldValue.serverTimestamp()

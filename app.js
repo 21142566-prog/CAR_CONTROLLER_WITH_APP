@@ -50,6 +50,44 @@ window.addEventListener('DOMContentLoaded', () => {
   setInterval(updateClock, 1000);
 });
 
+// Handle page unload/navigation - End session before leaving
+window.addEventListener('beforeunload', (event) => {
+  if (device && device.gatt && device.gatt.connected) {
+    console.log('⚠️ Page unloading while connected - ending session');
+    
+    // End Firebase session immediately (synchronous)
+    if (window.currentSession && typeof endSession === 'function') {
+      const endTime = new Date();
+      const duration = Math.floor((endTime - window.sessionStartTime) / 1000);
+      
+      // Update session synchronously
+      db.collection('sessions').doc(window.currentSession).update({
+        endTime: firebase.firestore.FieldValue.serverTimestamp(),
+        duration: duration,
+        status: 'disconnected'
+      }).catch(err => console.error('Error updating session:', err));
+      
+      window.currentSession = null;
+      window.sessionStartTime = null;
+    }
+    
+    // Disconnect BLE
+    try {
+      device.gatt.disconnect();
+    } catch (err) {
+      console.error('Error disconnecting BLE:', err);
+    }
+  }
+});
+
+// Handle visibility change (tab switch, minimize)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && device && device.gatt && device.gatt.connected) {
+    console.log('⚠️ Page hidden while connected - may lose connection');
+    // Note: BLE will automatically disconnect after ~30 seconds of inactivity
+  }
+});
+
 // Update clock display
 function updateClock() {
   const now = new Date();
@@ -333,9 +371,38 @@ function onDisconnect() {
 
 function updateUIConnected(connected) {
   document.getElementById('connectBtn').disabled = connected;
+  document.getElementById('disconnectBtn').disabled = !connected;
   controlButtons.forEach(id => document.getElementById(id).disabled = !connected);
   ledButtons.forEach(id => document.getElementById(id).disabled = !connected);
   document.getElementById('speedSlider').disabled = !connected;
+}
+
+// Manual disconnect function
+async function manualDisconnect() {
+  if (!device || !device.gatt.connected) {
+    console.warn('⚠️ No active connection to disconnect');
+    return;
+  }
+  
+  try {
+    console.log('🔌 Manual disconnect requested');
+    
+    // End Firebase session first
+    if (typeof endSession === 'function') {
+      await endSession();
+    }
+    
+    // Disconnect BLE
+    device.gatt.disconnect();
+    
+    // onDisconnect will be called automatically
+    console.log('✅ Disconnected successfully');
+    
+  } catch (error) {
+    console.error('❌ Error during disconnect:', error);
+    // Force cleanup
+    onDisconnect();
+  }
 }
 
 async function send(cmd, value = null) {

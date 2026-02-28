@@ -75,6 +75,14 @@ body {
   justify-content: space-between;
 }
 
+/* Header Left - Connect + Disconnect buttons */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .ble-btn {
   width: 50px;
   height: 50px;
@@ -99,6 +107,35 @@ body {
 .ble-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.disconnect-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: 3px solid #ef4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: white;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  flex-shrink: 0;
+}
+
+.disconnect-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.8);
+}
+
+.disconnect-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: #999;
+  border-color: #999;
+  box-shadow: none;
 }
 
 .title {
@@ -544,6 +581,21 @@ body {
     gap: 10px;
   }
   
+  .header-left {
+    gap: 8px;
+    order: 1;
+  }
+  
+  .ble-btn {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .disconnect-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
   .title {
     font-size: 18px;
     position: relative;
@@ -555,10 +607,8 @@ body {
     margin: 0;
   }
   
-  .ble-btn {
-    width: 45px;
-    height: 45px;
-    order: 1;
+  .header-right {
+    order: 3;
   }
   
   .clock-container {

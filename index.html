@@ -18,11 +18,18 @@
   <div class="app-container">
     <!-- Header -->
     <header class="header">
-      <button class="ble-btn" id="connectBtn" onclick="connect()">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-          <path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z" fill="currentColor"/>
-        </svg>
-      </button>
+      <div class="header-left">
+        <button class="ble-btn" id="connectBtn" onclick="connect()">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z" fill="currentColor"/>
+          </svg>
+        </button>
+        <button class="disconnect-btn" id="disconnectBtn" onclick="manualDisconnect()" disabled>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
       <h1 class="title">GUNNNZ CAR BLE</h1>
       <div class="header-right">
         <a href="statistics.html" class="stats-btn" title="View Statistics">📊</a>
