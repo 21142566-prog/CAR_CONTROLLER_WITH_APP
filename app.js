@@ -286,6 +286,15 @@ function setupControlButtons() {
   });
 }
 
+// helper that toggles between connect and disconnect
+function toggleConnection() {
+  if (device && device.gatt.connected) {
+    manualDisconnect();
+  } else {
+    connect();
+  }
+}
+
 async function connect() {
   try {
     // Disconnect if already connected
@@ -370,8 +379,12 @@ function onDisconnect() {
 }
 
 function updateUIConnected(connected) {
-  document.getElementById('connectBtn').disabled = connected;
-  document.getElementById('disconnectBtn').disabled = !connected;
+  const connBtn = document.getElementById('connectBtn');
+  // toggle color classes instead of disabling
+  connBtn.classList.toggle('connected', connected);
+  connBtn.classList.toggle('disconnected', !connected);
+  // when connected the button still clickable to disconnect
+
   controlButtons.forEach(id => document.getElementById(id).disabled = !connected);
   ledButtons.forEach(id => document.getElementById(id).disabled = !connected);
   document.getElementById('speedSlider').disabled = !connected;

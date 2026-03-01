@@ -87,6 +87,7 @@ body {
   width: 50px;
   height: 50px;
   border-radius: 50%;
+  /* default gradient will be overridden by state classes */
   background: linear-gradient(135deg, #4dd0e1, #00acc1);
   border: 3px solid #00bcd4;
   display: flex;
@@ -97,6 +98,19 @@ body {
   color: white;
   box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
   flex-shrink: 0;
+}
+
+/* state-specific colors */
+.ble-btn.disconnected {
+  background: linear-gradient(135deg, #9e9e9e, #757575);
+  border: 3px solid #616161;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.ble-btn.connected {
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  border: 3px solid #43a047;
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
 }
 
 .ble-btn:hover:not(:disabled) {
