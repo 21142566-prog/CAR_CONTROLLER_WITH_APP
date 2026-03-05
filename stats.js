@@ -319,6 +319,22 @@ function updateChart() {
 // EXPORT TO EXCEL
 // ============================================
 function exportToExcel() {
+  // if the library isn't loaded yet, try to fetch it dynamically and retry once
+  if (typeof XLSX === 'undefined') {
+    console.warn('XLSX not present, attempting to load dynamically');
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.19.4/dist/xlsx.full.min.js';
+    script.onload = () => {
+      console.log('SheetJS loaded dynamically, retrying export');
+      exportToExcel();
+    };
+    script.onerror = () => {
+      alert('Không thể tải thư viện Excel từ internet. Vui lòng kiểm tra kết nối hoặc lưu file thư viện cục bộ.');
+    };
+    document.head.appendChild(script);
+    return;
+  }
+
   // use filteredSessions so the export matches the current table view
   const dataArray = filteredSessions.length ? filteredSessions : allSessions;
   if (dataArray.length === 0) {
