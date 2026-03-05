@@ -56,7 +56,9 @@
     <!-- Controls -->
     <div class="controls">
       <button class="btn btn-primary" onclick="loadSessions()">🔄 Refresh Data</button>
-      <button class="btn btn-success" onclick="exportToCSV()">📥 Export CSV</button>
+      <!-- include SheetJS library for XLSX export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.4/dist/xlsx.full.min.js"></script>
+    <button class="btn btn-success" onclick="exportToExcel()">📥 Export Excel</button>
       <button class="btn btn-danger" onclick="deleteOldSessions()">🗑️ Delete Old (30+ days)</button>
     </div>
 

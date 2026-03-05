@@ -316,36 +316,33 @@ function updateChart() {
 }
 
 // ============================================
-// EXPORT TO CSV
+// EXPORT TO EXCEL
 // ============================================
-function exportToCSV() {
-  if (allSessions.length === 0) {
+function exportToExcel() {
+  // use filteredSessions so the export matches the current table view
+  const dataArray = filteredSessions.length ? filteredSessions : allSessions;
+  if (dataArray.length === 0) {
     alert('No data to export!');
     return;
   }
-  
-  // Create CSV content
-  let csv = 'ID,Device Name,Start Time,End Time,Duration (seconds),Status\n';
-  
-  allSessions.forEach(session => {
-    const startTime = session.startTime ? session.startTime.toISOString() : '';
-    const endTime = session.endTime ? session.endTime.toISOString() : '';
-    
-    csv += `"${session.id}","${session.deviceName || 'Unknown'}","${startTime}","${endTime}",${session.duration || 0},"${session.status || 'unknown'}"\n`;
-  });
-  
-  // Download CSV
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `ble-car-sessions-${new Date().toISOString().split('T')[0]}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  window.URL.revokeObjectURL(url);
-  
-  console.log('✅ CSV exported successfully');
+
+  // prepare rows as objects with explicit keys in desired order
+  const exportData = dataArray.map((session, index) => ({
+    '#': index + 1,
+    'Device Name': session.deviceName || 'Unknown',
+    'Start Time': session.startTime ? session.startTime.toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '',
+    'End Time': session.endTime ? session.endTime.toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '',
+    'Duration': session.duration ? formatDuration(session.duration) : 'N/A',
+    'Status': session.status || 'unknown'
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(exportData, { header: ['#','Device Name','Start Time','End Time','Duration','Status'] });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sessions');
+
+  const fname = `ble-car-sessions-${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, fname);
+  console.log('✅ Excel exported successfully');
 }
 
 // ============================================
