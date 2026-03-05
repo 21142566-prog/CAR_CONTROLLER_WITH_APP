@@ -1,4 +1,5 @@
 // Global variables
+console.log('🔧 stats.js version 2 loaded');
 let allSessions = [];
 let filteredSessions = [];
 let usageChart = null;
