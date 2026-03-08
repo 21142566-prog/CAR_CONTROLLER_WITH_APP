@@ -16,7 +16,7 @@ async function startSession() {
     // Tạo session mới trong Firestore
     const sessionRef = await db.collection('sessions').add({
       startTime: firebase.firestore.FieldValue.serverTimestamp(),
-      deviceName: device ? device.name : 'Unknown',
+      deviceName: getDeviceName(),
       status: 'connected',
       endTime: null,
       duration: 0
@@ -204,3 +204,31 @@ async function displayStats() {
 }
 
 console.log('✅ Firebase tracker loaded');
+
+// ============================================
+// HELPER: GET DEVICE NAME - Lấy tên thiết bị dựa trên platform
+// ============================================
+function getDeviceName() {
+  // Ưu tiên tên BLE device nếu có
+  if (device && device.name) {
+    return device.name;
+  }
+  
+  // Detect platform type
+  const ua = navigator.userAgent;
+  const platform = navigator.platform;
+  
+  if (/Android/i.test(ua)) {
+    return 'Android Device';
+  } else if (/iPhone|iPad|iPod/i.test(ua)) {
+    return 'iOS Device';
+  } else if (/Windows/i.test(platform)) {
+    return 'Windows PC';
+  } else if (/Mac/i.test(platform)) {
+    return 'Mac Computer';
+  } else if (/Linux/i.test(platform)) {
+    return 'Linux Device';
+  } else {
+    return 'Unknown Device';
+  }
+}
