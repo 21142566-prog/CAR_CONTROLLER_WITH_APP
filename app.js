@@ -1,3 +1,125 @@
+// ============================================
+// LOGIN SYSTEM
+// ============================================
+
+// Tài khoản mặc định (có thể thay đổi theo nhu cầu)
+const DEFAULT_USERS = [
+  { username: 'admin', password: '12345' },
+  { username: 'gunnnz', password: 'car123' }
+];
+
+// Kiểm tra xem người dùng đã đăng nhập hay chưa
+function isUserLoggedIn() {
+  const loginToken = localStorage.getItem('loginToken');
+  const tokenExpiry = localStorage.getItem('tokenExpiry');
+  
+  if (!loginToken || !tokenExpiry) {
+    return false;
+  }
+  
+  // Kiểm tra xem token có hết hạn không (24 giờ)
+  const now = new Date().getTime();
+  if (now > parseInt(tokenExpiry)) {
+    localStorage.removeItem('loginToken');
+    localStorage.removeItem('tokenExpiry');
+    localStorage.removeItem('loggedInUser');
+    return false;
+  }
+  
+  return true;
+}
+
+// Xử lý đăng nhập
+function handleLogin(event) {
+  event.preventDefault();
+  
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const errorDiv = document.getElementById('loginError');
+  
+  // Kiểm tra thông tin đăng nhập
+  const user = DEFAULT_USERS.find(u => u.username === username && u.password === password);
+  
+  if (!user) {
+    errorDiv.textContent = '❌ Tên đăng nhập hoặc mật khẩu không chính xác!';
+    document.getElementById('password').value = '';
+    return;
+  }
+  
+  // Tạo token và lưu vào localStorage
+  const token = generateToken();
+  const expiryTime = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 giờ
+  
+  localStorage.setItem('loginToken', token);
+  localStorage.setItem('tokenExpiry', expiryTime);
+  localStorage.setItem('loggedInUser', username);
+  
+  console.log('✅ Đăng nhập thành công:', username);
+  errorDiv.textContent = '';
+  
+  // Ẩn modal đăng nhập và hiển thị giao diện chính
+  showMainInterface();
+}
+
+// Xử lý đăng xuất
+function handleLogout(event) {
+  event.preventDefault();
+  
+  // Ngắt kết nối BLE nếu đang kết nối
+  if (device && device.gatt && device.gatt.connected) {
+    manualDisconnect();
+  }
+  
+  // Xóa token
+  localStorage.removeItem('loginToken');
+  localStorage.removeItem('tokenExpiry');
+  localStorage.removeItem('loggedInUser');
+  
+  console.log('✅ Đã đăng xuất');
+  
+  // Hiển thị lại modal đăng nhập
+  showLoginInterface();
+}
+
+// Tạo token (đơn giản)
+function generateToken() {
+  return Math.random().toString(36).substr(2) + Date.now().toString(36);
+}
+
+// Hiển thị giao diện đăng nhập
+function showLoginInterface() {
+  const loginModal = document.getElementById('loginModal');
+  const appContainer = document.getElementById('appContainer');
+  
+  loginModal.classList.remove('hidden');
+  appContainer.style.display = 'none';
+  
+  // Clear form
+  document.getElementById('loginForm').reset();
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('username').focus();
+}
+
+// Hiển thị giao diện chính
+function showMainInterface() {
+  const loginModal = document.getElementById('loginModal');
+  const appContainer = document.getElementById('appContainer');
+  
+  loginModal.classList.add('hidden');
+  appContainer.style.display = 'flex';
+  
+  // Đảm bảo logout button có event listener
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    // Remove old listeners if any
+    const newLogoutBtn = logoutBtn.cloneNode(true);
+    logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+    
+    // Add new listener
+    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+  }
+}
+
 // BLE Configuration
 let device, server, service, cmdChar;
 const SERVICE_UUID = "12345678-1234-1234-1234-1234567890ab";
@@ -36,6 +158,32 @@ window.addEventListener('DOMContentLoaded', () => {
   console.log('Web Bluetooth API available?', !!navigator.bluetooth);
   console.log('Secure context (HTTPS/localhost)?', window.isSecureContext);
   console.log('Current URL:', window.location.href);
+
+  // 🔐 Kiểm tra đăng nhập
+  console.log('🔐 Kiểm tra trạng thái đăng nhập...');
+  if (isUserLoggedIn()) {
+    console.log('✅ Người dùng đã đăng nhập:', localStorage.getItem('loggedInUser'));
+    showMainInterface();
+  } else {
+    console.log('🔒 Người dùng chưa đăng nhập, hiển thị modal đăng nhập');
+    showLoginInterface();
+    
+    // Thêm event listener cho form đăng nhập
+    const loginForm = document.getElementById('loginForm');
+    const passwordInput = document.getElementById('password');
+    
+    if (loginForm) {
+      loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    if (passwordInput) {
+      passwordInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+          handleLogin(event);
+        }
+      });
+    }
+  }
   
   if (!navigator.bluetooth) {
     console.error('❌ Web Bluetooth API not available!');
