@@ -1,12 +1,8 @@
 // ============================================
 // LOGIN SYSTEM
 // ============================================
-
-// Tài khoản mặc định (có thể thay đổi theo nhu cầu)
-const DEFAULT_USERS = [
-  { username: 'admin', password: '12345' },
-  { username: 'gunnnz', password: 'car123' }
-];
+// API Configuration
+const API_URL = 'http://localhost:3000';
 
 // Kiểm tra xem người dùng đã đăng nhập hay chưa
 function isUserLoggedIn() {
@@ -30,35 +26,52 @@ function isUserLoggedIn() {
 }
 
 // Xử lý đăng nhập
-function handleLogin(event) {
+async function handleLogin(event) {
   event.preventDefault();
   
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
   const errorDiv = document.getElementById('loginError');
+  const loginBtn = document.querySelector('.login-btn');
   
-  // Kiểm tra thông tin đăng nhập
-  const user = DEFAULT_USERS.find(u => u.username === username && u.password === password);
-  
-  if (!user) {
-    errorDiv.textContent = '❌ Tên đăng nhập hoặc mật khẩu không chính xác!';
-    document.getElementById('password').value = '';
-    return;
-  }
-  
-  // Tạo token và lưu vào localStorage
-  const token = generateToken();
-  const expiryTime = new Date().getTime() + (24 * 60 * 60 * 1000); // 24 giờ
-  
-  localStorage.setItem('loginToken', token);
-  localStorage.setItem('tokenExpiry', expiryTime);
-  localStorage.setItem('loggedInUser', username);
-  
-  console.log('✅ Đăng nhập thành công:', username);
+  loginBtn.disabled = true;
+  loginBtn.textContent = 'Đang xác thực...';
   errorDiv.textContent = '';
   
-  // Ẩn modal đăng nhập và hiển thị giao diện chính
-  showMainInterface();
+  try {
+    const response = await fetch(`${API_URL}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      errorDiv.textContent = '❌ ' + (data.message || 'Đăng nhập không thành công!');
+      document.getElementById('password').value = '';
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Đăng nhập';
+      return;
+    }
+    
+    localStorage.setItem('loginToken', data.token);
+    localStorage.setItem('tokenExpiry', data.expiryTime);
+    localStorage.setItem('loggedInUser', username);
+    
+    console.log('✅ Đăng nhập thành công:', username);
+    errorDiv.textContent = '';
+    
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Đăng nhập';
+    
+    showMainInterface();
+  } catch (error) {
+    console.error('Login error:', error);
+    errorDiv.textContent = '❌ Lỗi server. Vui lòng kiểm tra backend API.';
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Đăng nhập';
+  }
 }
 
 // Xử lý đăng xuất
@@ -81,10 +94,6 @@ function handleLogout(event) {
   showLoginInterface();
 }
 
-// Tạo token (đơn giản)
-function generateToken() {
-  return Math.random().toString(36).substr(2) + Date.now().toString(36);
-}
 
 // Hiển thị giao diện đăng nhập
 function showLoginInterface() {
